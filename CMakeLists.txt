@@ -26,6 +26,7 @@ target_link_libraries(rp_common PUBLIC
         pico_stdlib
         hardware_adc
         hardware_i2c
-        hardware_dma)
+        hardware_dma
+        hardware_flash)
 
 target_include_directories(rp_common PUBLIC .)
