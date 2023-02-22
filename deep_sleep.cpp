@@ -4,10 +4,11 @@
 
 #include "deep_sleep.hpp"
 
-#include "pico/stdlib.h"
 #include "hardware/clocks.h"
 #include "hardware/structs/scb.h"
 #include "hardware/structs/rosc.h"
+#include "hardware/structs/timer.h"
+#include "hardware/irq.h"
 #include "hardware/sync.h"
 #include "hardware/pll.h"
 
