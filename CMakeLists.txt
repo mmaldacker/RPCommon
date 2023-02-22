@@ -16,17 +16,21 @@ add_library(rp_common STATIC
         flash_storage.cpp
         flash_storage.hpp
         i2c.cpp
-        i2c.hpp
+        i2c.hpp)
+
+target_link_libraries(rp_common PUBLIC
+        hardware_adc
+        hardware_i2c
+        hardware_flash)
+
+target_include_directories(rp_common PUBLIC .)
+
+add_library(rp_common_wifi STATIC
         tcp_client.cpp
         tcp_client.hpp
         wireless.cpp
         wireless.hpp)
 
-target_link_libraries(rp_common PUBLIC
-        pico_stdlib
-        hardware_adc
-        hardware_i2c
-        hardware_dma
-        hardware_flash)
+target_link_libraries(rp_common_wifi PUBLIC pico_cyw43_arch_lwip_poll)
 
-target_include_directories(rp_common PUBLIC .)
+target_include_directories(rp_common_wifi PUBLIC .)
