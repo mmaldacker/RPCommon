@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
-add_library(rp_common
+add_library(rp_common STATIC
         adc.cpp
         adc.hpp
         deep_sleep.cpp
@@ -22,9 +22,9 @@ add_library(rp_common
         wireless.cpp
         wireless.hpp)
 
-target_link_libraries(rp_common
+target_link_libraries(rp_common PUBLIC
         pico_stdlib
-        hardware_pio
+        hardware_adc
         hardware_dma)
 
-target_include_directories(rp_common PRIVATE .)
+target_include_directories(rp_common PUBLIC .)
