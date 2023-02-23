@@ -8,3 +8,4 @@
 
 void deep_sleep_init();
 void deep_sleep(uint32_t delay_ms);
+void deep_sleep_pin(uint32_t gpio_pin, bool edge, bool high);
