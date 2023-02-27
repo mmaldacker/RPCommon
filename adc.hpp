@@ -14,6 +14,9 @@ public:
 
   uint read(uint pin);
   float read_voltage(uint pin);
+  float read_power_voltage();
 };
+
+int power_source(bool *battery_powered);
 
 #endif  // PICOSENSOR_ADC_HPP
