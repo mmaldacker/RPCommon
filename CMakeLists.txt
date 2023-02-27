@@ -29,7 +29,15 @@ add_library(rp_common_wifi STATIC
         tcp_client.cpp
         tcp_client.hpp
         wireless.cpp
-        wireless.hpp)
+        wireless.hpp
+        adc.cpp
+        adc.hpp
+        deep_sleep.cpp
+        deep_sleep.hpp
+        flash_storage.cpp
+        flash_storage.hpp
+        i2c.cpp
+        i2c.hpp)
 
 target_link_libraries(rp_common_wifi PUBLIC pico_cyw43_arch_lwip_poll)
 
