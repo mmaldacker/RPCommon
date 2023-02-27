@@ -37,8 +37,13 @@ add_library(rp_common_wifi STATIC
         flash_storage.cpp
         flash_storage.hpp
         i2c.cpp
-        i2c.hpp)
+        i2c.hpp
+        lwipopts.h)
 
-target_link_libraries(rp_common_wifi PUBLIC pico_cyw43_arch_lwip_poll)
+target_link_libraries(rp_common_wifi PUBLIC
+        pico_cyw43_arch_lwip_poll
+        hardware_adc
+        hardware_i2c
+        hardware_flash)
 
 target_include_directories(rp_common_wifi PUBLIC .)
