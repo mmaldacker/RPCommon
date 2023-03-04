@@ -28,6 +28,10 @@ target_include_directories(rp_common PUBLIC .)
 add_library(rp_common_wifi STATIC
         tcp_client.cpp
         tcp_client.hpp
+        http_client.cpp
+        http_client.hpp
+        picohttpparser.h
+        picohttpparser.c
         wireless.cpp
         wireless.hpp
         adc.cpp

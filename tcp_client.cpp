@@ -32,7 +32,11 @@ tcp_client::tcp_client(const std::string& ip, int port,
 
   tcp_arg(pcb, this);
 
-  auto err_callback = +[](void* arg, err_t err) { printf("TCP Error: %s\n", lwip_strerr(err)); };
+  auto err_callback = +[](void* arg, err_t err) {
+    printf("TCP Error: %s\n", lwip_strerr(err));
+    auto* client = static_cast<tcp_client*>(arg);
+    client->is_error = true;
+  };
   tcp_err(pcb, err_callback);
 
   auto tcp_recv_callback = +[](void* arg, struct tcp_pcb* tpcb, struct pbuf* p, err_t err) -> err_t
@@ -43,7 +47,7 @@ tcp_client::tcp_client(const std::string& ip, int port,
 
     if (p == nullptr)
     {
-      client->is_received = true;
+      client->is_error = true;
       return ERR_OK;
     }
 
@@ -54,8 +58,6 @@ tcp_client::tcp_client(const std::string& ip, int port,
       std::memcpy(data.data() + offset, q->payload, q->len);
       offset += q->len;
     }
-
-    printf("TCP Recv:\n%s\n", data.data());
 
     client->received_buffer = std::move(data);
 
@@ -101,119 +103,103 @@ tcp_client::~tcp_client()
   printf("TCP Disconnected\n");
 }
 
-bool tcp_client::send_packet(const std::string& s,
-                             std::uint32_t timeout_ms)
+tcp_client::status tcp_client::send_packet(const std::string& s)
 {
-  if (!is_connected)
+  if (!is_connected || is_error)
   {
-    return false;
+    printf("Not connected or error\n");
+    return status::error;
   }
 
   printf("TCP Sending: %d\n", s.size());
-  num_send_remaining = s.size();
+  num_send_remaining += s.size();
 
   auto error = tcp_write(pcb, s.c_str(), s.length(), TCP_WRITE_FLAG_COPY);
   if (error)
   {
     printf("Error TCP Send: %s\n", lwip_strerr(error));
-    return false;
+    return status::error;
   }
 
-  error = tcp_output(pcb);
-  if (error)
-  {
-    printf("Error TCP Output: %s\n", lwip_strerr(error));
-    return false;
-  }
-
-  wait([&] { return num_send_remaining == 0; }, timeout_ms);
-  return true;
+  return status::ok;
 }
 
-bool tcp_client::send_http_request(const std::string& header, const std::string& body,
-                                   std::uint32_t timeout_ms)
+tcp_client::status tcp_client::flush(std::uint32_t timeout_ms)
 {
-  if (!is_connected)
+  if (!is_connected || is_error)
   {
-    return false;
+    printf("Not connected or error\n");
+    return status::error;
   }
 
-  std::uint32_t size = header.length() + body.length();
-
-  printf("TCP Sending: %lu\n", size);
-  num_send_remaining = size;
-
-  auto error =
-      tcp_write(pcb, header.c_str(), header.length(), TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
-  if (error)
-  {
-    printf("Error TCP Send: %s\n", lwip_strerr(error));
-    return false;
-  }
-
-  error = tcp_write(pcb, body.c_str(), body.length(), TCP_WRITE_FLAG_COPY);
-  if (error)
-  {
-    printf("Error TCP Send: %s\n", lwip_strerr(error));
-    return false;
-  }
-
-  error = tcp_output(pcb);
+  auto error = tcp_output(pcb);
   if (error)
   {
     printf("Error TCP Output: %s\n", lwip_strerr(error));
-    return false;
+    return status::error;
   }
 
-  wait([&] { return num_send_remaining == 0; }, timeout_ms);
-  return true;
+  return wait([&] { return num_send_remaining == 0; }, timeout_ms);
 }
 
-void tcp_client::wait_response(const std::function<bool(const std::vector<std::uint8_t> buffer)>& f,
+tcp_client::status tcp_client::wait_response(const std::function<bool(const std::vector<std::uint8_t> buffer)>& f,
                                std::uint32_t timeout_ms)
 {
-  if (!is_connected)
+  if (!is_connected || is_error)
   {
-    return;
+    printf("Not connected or error\n");
+    return status::error;
   }
 
   auto start_ms = to_ms_since_boot(get_absolute_time());
   while (to_ms_since_boot(get_absolute_time()) - start_ms < timeout_ms)
   {
-    if (is_received)
-    {
-      break;
-    }
-
-    if (f(received_buffer))
+    if (is_received || is_error || f(received_buffer))
     {
       break;
     }
 
     cyw43_arch_poll();
     sleep_ms(5);
+  }
+
+  if (is_error)
+  {
+    printf("TCP wait response error\n");
+    return status::error;
   }
 
   if (!f(received_buffer) && !is_received)
   {
     printf("TCP Wait response timeout\n");
+    return status::timeout;
   }
 
   is_received = false;
+  return status::ok;
 }
 
-void tcp_client::wait(const std::function<bool()>& predicate,
+tcp_client::status tcp_client::wait(const std::function<bool()>& predicate,
                       std::uint32_t timeout_ms)
 {
   auto start_ms = to_ms_since_boot(get_absolute_time());
-  while (!predicate() && to_ms_since_boot(get_absolute_time()) - start_ms < timeout_ms)
+  while (!is_error && !predicate() && to_ms_since_boot(get_absolute_time()) - start_ms < timeout_ms)
   {
     cyw43_arch_poll();
     sleep_ms(5);
   }
 
+  if (is_error)
+  {
+    printf("TCP Wait Error\n");
+    return status::error;
+  }
+
   if (!predicate())
   {
     printf("TCP Wait timeout\n");
+    return status::timeout;
   }
+
+  return status::ok;
 }
