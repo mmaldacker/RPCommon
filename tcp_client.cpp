@@ -59,9 +59,13 @@ tcp_client::tcp_client(const std::string& ip, int port,
       offset += q->len;
     }
 
-    client->received_buffer = std::move(data);
+    client->received_buffer.insert(
+        client->received_buffer.end(),
+        std::make_move_iterator(data.begin()),
+        std::make_move_iterator(data.end())
+    );
 
-    tcp_recved(client->pcb, client->received_buffer.size());
+    tcp_recved(client->pcb, p->tot_len);
     pbuf_free(p);
 
     return ERR_OK;
@@ -98,7 +102,7 @@ tcp_client::tcp_client(const std::string& ip, int port,
 
 tcp_client::~tcp_client()
 {
-  tcp_close(pcb);
+  tcp_abort(pcb);
 
   printf("TCP Disconnected\n");
 }
@@ -142,8 +146,9 @@ tcp_client::status tcp_client::flush(std::uint32_t timeout_ms)
   return wait([&] { return num_send_remaining == 0; }, timeout_ms);
 }
 
-tcp_client::status tcp_client::wait_response(const std::function<bool(const std::vector<std::uint8_t> buffer)>& f,
-                               std::uint32_t timeout_ms)
+tcp_client::status tcp_client::wait_response(std::vector<std::uint8_t>& response,
+                                             const std::function<bool(const std::vector<std::uint8_t> buffer)>& predicate,
+                                             std::uint32_t timeout_ms)
 {
   if (!is_connected || is_error)
   {
@@ -154,7 +159,7 @@ tcp_client::status tcp_client::wait_response(const std::function<bool(const std:
   auto start_ms = to_ms_since_boot(get_absolute_time());
   while (to_ms_since_boot(get_absolute_time()) - start_ms < timeout_ms)
   {
-    if (is_received || is_error || f(received_buffer))
+    if (is_received || is_error || predicate(received_buffer))
     {
       break;
     }
@@ -166,16 +171,19 @@ tcp_client::status tcp_client::wait_response(const std::function<bool(const std:
   if (is_error)
   {
     printf("TCP wait response error\n");
+    received_buffer.clear();
     return status::error;
   }
 
-  if (!f(received_buffer) && !is_received)
+  if (!predicate(received_buffer) && !is_received)
   {
     printf("TCP Wait response timeout\n");
+    received_buffer.clear();
     return status::timeout;
   }
 
   is_received = false;
+  response = std::move(received_buffer);
   return status::ok;
 }
 

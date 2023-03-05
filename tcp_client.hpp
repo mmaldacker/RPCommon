@@ -28,8 +28,9 @@ public:
   status send_packet(const std::string& s);
   status flush(std::uint32_t timeout_ms);
 
-  status wait_response(const std::function<bool(const std::vector<std::uint8_t> buffer)>& f,
-                     std::uint32_t timeout_ms);
+  status wait_response(std::vector<std::uint8_t>& response,
+                       const std::function<bool(const std::vector<std::uint8_t> buffer)>& predicate,
+                       std::uint32_t timeout_ms);
 
 private:
   tcp_pcb* pcb;

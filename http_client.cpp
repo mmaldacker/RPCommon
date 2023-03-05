@@ -4,6 +4,7 @@
 
 #include "http_client.hpp"
 #include "picohttpparser.h"
+#include <charconv>
 
 std::string make_http_header(const std::string &host, const std::string &method,
                              const std::string &path, std::uint32_t length) {
@@ -32,25 +33,41 @@ void http_client::send_http_request(
     return;
   }
 
-  int status;
+  int http_status;
+  int minor_version;
+  phr_header headers[100];
+  size_t num_headers = sizeof(headers) / sizeof(headers[0]);
   size_t msg_length;
   const char *msg;
+  int parsed_offset = 0;
+  std::vector<uint8_t> response;
 
-  auto r = client.wait_response(
+  auto status = client.wait_response(
+      response,
       [&](const std::vector<uint8_t> &buffer) {
-        int minor_version;
-        phr_header headers[100];
-        size_t num_headers = sizeof(headers) / sizeof(headers[0]);
 
-        int r = phr_parse_response((const char *)buffer.data(), buffer.size(),
-                                   &minor_version, &status, &msg, &msg_length,
+        num_headers = sizeof(headers) / sizeof(headers[0]);
+        parsed_offset = phr_parse_response((const char *)buffer.data(), buffer.size(),
+                                   &minor_version, &http_status, &msg, &msg_length,
                                    headers, &num_headers, 0);
-        return r >= 0;
+        return parsed_offset >= 0;
       },
       timeout_ms);
 
-  if (r == tcp_client::status::ok) {
-    response_cb(status, msg_length, msg);
+  if (status == tcp_client::status::ok) {
+    size_t content_length = 0;
+    for (int i = 0; i < num_headers; i++)
+    {
+      if (std::string_view(headers[i].name, headers[i].name_len) == "Content-Length")
+      {
+        auto value = std::string_view(headers[i].value, headers[i].value_len);
+        std::from_chars(value.begin(), value.end(), content_length);
+        break;
+      }
+    }
+
+    const char* body_content = (const char*)response.data() + parsed_offset;
+     response_cb(http_status, content_length, body_content);
   } else {
     response_cb(-1, 0, nullptr);
   }
