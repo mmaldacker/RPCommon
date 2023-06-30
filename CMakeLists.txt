@@ -16,7 +16,9 @@ add_library(rp_common STATIC
         flash_storage.cpp
         flash_storage.hpp
         i2c.cpp
-        i2c.hpp)
+        i2c.hpp
+        ssd1306.h
+        ssd1306.c)
 
 target_link_libraries(rp_common PUBLIC
         hardware_adc
@@ -42,6 +44,8 @@ add_library(rp_common_wifi STATIC
         flash_storage.hpp
         i2c.cpp
         i2c.hpp
+        ssd1306.h
+        ssd1306.c
         lwipopts.h)
 
 target_link_libraries(rp_common_wifi PUBLIC
