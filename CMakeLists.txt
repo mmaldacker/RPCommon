@@ -21,9 +21,11 @@ add_library(rp_common STATIC
         ssd1306.c)
 
 target_link_libraries(rp_common PUBLIC
+        pico_stdlib
         hardware_adc
         hardware_i2c
-        hardware_flash)
+        hardware_flash
+        pico_binary_info)
 
 target_include_directories(rp_common PUBLIC .)
 
@@ -49,9 +51,11 @@ add_library(rp_common_wifi STATIC
         lwipopts.h)
 
 target_link_libraries(rp_common_wifi PUBLIC
+        pico_stdlib
         pico_cyw43_arch_lwip_poll
         hardware_adc
         hardware_i2c
-        hardware_flash)
+        hardware_flash
+        pico_binary_info)
 
 target_include_directories(rp_common_wifi PUBLIC .)

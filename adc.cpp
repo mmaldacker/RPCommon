@@ -6,31 +6,6 @@
 
 #if defined CYW43_WL_GPIO_LED_PIN
 #include "pico/cyw43_arch.h"
-
-// Pin used to monitor VSYS using ADC
-#ifndef PICO_VSYS_PIN
-#define PICO_VSYS_PIN 29
-#endif
-
-// VSYS pin is shared with CYW43
-#ifndef CYW43_USES_VSYS_PIN
-#define CYW43_USES_VSYS_PIN 1
-#endif
-
-// CYW43 GPIO to get VBUS
-#ifndef CYW43_WL_GPIO_VBUS_PIN
-#define CYW43_WL_GPIO_VBUS_PIN 2
-#endif
-#else
-// Pin get VBUS
-#ifndef PICO_VBUS_PIN
-#define PICO_VBUS_PIN 24
-#endif
-
-// Pin used to monitor VSYS using ADC
-#ifndef PICO_VSYS_PIN
-#define PICO_VSYS_PIN 29
-#endif
 #endif
 
 #ifndef PICO_POWER_SAMPLE_COUNT
