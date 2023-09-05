@@ -30,7 +30,6 @@ SOFTWARE.
 
 #ifndef _inc_ssd1306
 #define _inc_ssd1306
-#include <pico/stdlib.h>
 #include <hardware/i2c.h>
 
 /* CPP guard */

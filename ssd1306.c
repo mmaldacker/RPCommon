@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <pico/stdlib.h>
 #include <hardware/i2c.h>
 #include <pico/binary_info.h>
 #include <stdlib.h>
