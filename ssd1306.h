@@ -114,6 +114,13 @@ void ssd1306_poweroff(ssd1306_t *p);
 void ssd1306_poweron(ssd1306_t *p);
 
 /**
+    @brief write command to display
+    @param[in] p : instance of display
+	@param[in] val : cmd
+*/
+void ssd1306_write(ssd1306_t *p, uint8_t val);
+
+/**
 	@brief set contrast of display
 
 	@param[in] p : instance of display

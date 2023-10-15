@@ -52,7 +52,7 @@ inline static void fancy_write(i2c_inst_t *i2c, uint8_t addr, const uint8_t *src
     }
 }
 
-inline static void ssd1306_write(ssd1306_t *p, uint8_t val) {
+void ssd1306_write(ssd1306_t *p, uint8_t val) {
     uint8_t d[2]= {0x00, val};
     fancy_write(p->i2c_i, p->address, d, 2, "ssd1306_write");
 }
