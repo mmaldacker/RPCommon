@@ -12,7 +12,7 @@ class adc
 public:
   adc();
 
-  uint read(uint pin);
+  uint read(uint pin, int sampleCount = 3);
   float read_voltage(uint pin);
   float read_power_voltage();
 };

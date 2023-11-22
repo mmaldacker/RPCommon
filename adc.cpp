@@ -34,9 +34,14 @@ adc::adc() {
     adc_set_temp_sensor_enabled(true);
 }
 
-uint adc::read(uint pin) {
+uint adc::read(uint pin, int sampleCount) {
     adc_select_input(pin);
-    return adc_read();
+    int value = 0;
+    for (int i = 0; i < sampleCount; i++) {
+      value += adc_read();
+    }
+
+    return value / sampleCount;
 }
 
 float adc::read_voltage(uint pin) {
