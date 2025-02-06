@@ -6,6 +6,7 @@
 #define PICOSENSOR_WIRELESS_HPP
 
 #include <string>
+#include <cstdint>
 
 class wireless
 {

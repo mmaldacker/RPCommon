@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <cstdint>
 
 #include "lwip/pbuf.h"
 #include "lwip/sockets.h"
