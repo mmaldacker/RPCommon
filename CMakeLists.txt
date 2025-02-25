@@ -29,6 +29,26 @@ target_link_libraries(rp_common PUBLIC
 
 target_include_directories(rp_common PUBLIC .)
 
+
+add_library(rp_common2 STATIC
+        adc.cpp
+        adc.hpp
+        flash_storage.cpp
+        flash_storage.hpp
+        i2c.cpp
+        i2c.hpp
+        ssd1306.h
+        ssd1306.c)
+
+target_link_libraries(rp_common2 PUBLIC
+        pico_stdlib
+        hardware_adc
+        hardware_i2c
+        hardware_flash
+        pico_binary_info)
+
+target_include_directories(rp_common2 PUBLIC .)
+
 add_library(rp_common_wifi STATIC
         tcp_client.cpp
         tcp_client.hpp
