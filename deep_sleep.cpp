@@ -14,6 +14,7 @@
 #include "hardware/structs/scb.h"
 #include "hardware/structs/timer.h"
 #include "hardware/sync.h"
+#include "pico/runtime_init.h"
 
 #define ALARM_NUM 0
 #define ALARM_IRQ TIMER_IRQ_0
